@@ -1,7 +1,7 @@
 <div class="price_offers">
                                     <div class="tbr_top">
                                         <div class="select_wrapper">
-                                            <select class="form-select select_dropdown" required v-model="selectedPackageClassId">
+                                            <select class="form-select select_dropdown"  required v-model="selectedPackageClassId">
                                                 <option value="0" selected>Standard</option>
                                                 <option value="1">Value</option>
                                                 <option value="2">Premium</option>

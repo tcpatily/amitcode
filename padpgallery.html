@@ -117,7 +117,7 @@
                                 </div>
                                 <div class="pibr_right">
                                     <div class="pibr_top">
-                                        <span>4.7</span>
+                                        <span>{{packageDetailsResponse[0]?.packageDetail?.rating}}</span>
                                         <div class="stars">
                                             <img src="assets/images/common-img/star.svg" alt="" />
                                             <img src="assets/images/common-img/star.svg" alt="" />
@@ -128,7 +128,12 @@
                                     </div>
                                     <div class="seperator"></div>
                                     <div class="pibr_bottom">
-                                        <span>1.5k</span>
+                                        <span> {{
+      packageDetailsResponse[0]?.packageDetail?.noOfCustomers >= 1000
+        ? (packageDetailsResponse[0].packageDetail.noOfCustomers / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+        : packageDetailsResponse[0]?.packageDetail?.noOfCustomers
+    }}</span>
+                                        <!-- <span>1.5k</span> -->
                                         <span><span>Reviews</span></span>
                                     </div>
                                 </div>

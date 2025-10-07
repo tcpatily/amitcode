@@ -1572,61 +1572,35 @@
 
                                                 
 <div id="hotels" class="tab-details">
-  <div class="tab_card">
-    <div class="card_top">
-      <img src="/images/tcHolidays/tc-PDP/building-03.svg" alt="" />
-      <h6>Hotels</h6>
-    </div>
-
-    <div class="tabDetails_wrapper">
-      <div class="card_bottom">
-        <!-- group itinerary by cityName and count nights (inline reduce) -->
-        <template
-          v-for="(group, gIndex) in (sortItineraryByDay() || []).reduce((acc, cur) => {
-            const name = cur.cityCode?.cityName || cur.cityCode?.tcilMstCountryStateMapping?.stateName || 'Unknown';
-            const key = name;
-            const found = acc.find(x => x.key === key);
-            if (!found) {
-              acc.push({
-                key,
-                cityName: name,
-                nights: 1,
-                overnight: cur.overnightStay || '',
-                samples: [cur]
-              });
-            } else {
-              found.nights += 1;
-              found.samples.push(cur);
-              // prefer first non-empty overnightStay
-              if (!found.overnight && cur.overnightStay) found.overnight = cur.overnightStay;
-            }
-            return acc;
-          }, [])"
-          :key="'hotel-group-' + gIndex"
-        >
-          <div class="hotel_location">
-            <p class="title">
-              {{ group.cityName }}
-              <span>({{ group.nights }}N/{{ group.nights + 1 }}D)</span>
-            </p>
-
-            <span class="sub_title" v-if="group.overnight" v-html="group.overnight"></span>
-            <span class="sub_title" v-else>(Hotel details not available)</span>
-
-            <!-- optional rating placeholder (hide if not present) -->
-            <div class="rating" v-if="true">
-              <span class="stars"><img src="/images/tcHolidays/star.svg" alt="" /></span>
-              <span>4.5<span>(1.5K)</span></span>
+    <div class="tab_card">
+        <div class="card_top">
+            <img src="/images/tcHolidays/tc-PDP/building-03.svg" alt="" />
+            <h6>Hotels</h6>
+        </div>
+        <div class="tabDetails_wrapper">
+            <div class="card_bottom">
+                <template v-for="(accommodation, index) in filteredAccommodations" :key="accommodation.accomodationDetailId">
+                    <div class="hotel_location">
+                        <p class="title">
+                            {{ accommodation.accomodationHotelId.cityCode.cityName }} 
+                            <span>({{ accommodation.noOfNights }}N/{{ accommodation.day }}D)</span>
+                        </p>
+                        <span class="sub_title">
+                            {{ accommodation.accomodationHotelId.hotelName }} in {{ accommodation.accomodationHotelId.location }}
+                        </span>
+                        <div class="rating">
+                            <span class="stars">
+                                <img src="/images/tcHolidays/star.svg" alt="" />
+                            </span>
+                            <span>{{ accommodation.accomodationHotelId.starRating }}</span><span>(1.5K)</span></span>
+                        </div>
+                    </div>
+                    <div class="seperator" v-if="index < filteredAccommodations.length - 1"></div>
+                </template>
             </div>
-          </div>
-
-          <div class="seperator" v-if="gIndex < ((sortItineraryByDay() || []).length - 1)"></div>
-        </template>
-      </div>
+        </div>
     </div>
-  </div>
 </div>
-
                                                 <!-- <div id="hotels" class="tab-details">
                                                     <div class="tab_card">
                                                         <div class="card_top">
@@ -1822,7 +1796,69 @@
                                                         </div>
                                                     </div>
                                                 </div> -->
-                                                <div id="visa" class="tab-details">
+
+
+
+                                                 <div id="visa" class="tab-details" v-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaIncluded === 'Y'">
+    <div class="tab_card">
+        <div class="card_top">
+            <img src="/images/tcHolidays/tc-PDP/passport.svg" alt="" />
+            <h6>Visa</h6>
+        </div>
+        <div class="tabDetails_wrapper">
+            <div class="card_bottom">
+                <!-- Show default visa message -->
+                <div class="comn_blck" v-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaDefaultMsg === 'Y'">
+                    <p class="title">Visa requirements</p>
+                    <span class="sub_title" v-html="packageDetailsResponse[0].packageDetail.visaDefaultMsg"></span>
+                </div>
+
+                <!-- Show visa from collection based on package class -->
+                <template v-else-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaDefaultMsg === 'N'">
+                    <div class="comn_blck" v-for="visa in filteredVisaCollection" :key="visa.visaId || visa.packageClassId">
+                        <p class="title">Visa requirements</p>
+                        <span class="sub_title" v-html="visa.visa"></span>
+                    </div>
+                </template>
+
+                <div class="comn_blck">
+                    <p class="title">Passport</p>
+                    <span class="sub_title">Passport should be valid for 6 months from the date of departure</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="insurance" class="tab-details" v-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaIncluded === 'Y'">
+    <div class="tab_card">
+        <div class="card_top">
+            <img src="/images/tcHolidays/tc-PDP/shield-tick.svg" alt="" />
+            <h6>Insurance</h6>
+        </div>
+        <div class="tabDetails_wrapper">
+            <div class="card_bottom">
+                <!-- Show default insurance message -->
+                <template v-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaDefaultMsg === 'Y'">
+                    <div class="comn_blck">
+                        <p class="title">Medical insurance</p>
+                        <span class="sub_title">Travel Insurance as required for the package (For passengers till 60 years of age)</span>
+                    </div>
+                </template>
+
+                <!-- Show insurance from collection based on package class -->
+                <template v-else-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaDefaultMsg === 'N'">
+                    <div class="comn_blck" v-for="visa in filteredVisaCollection" :key="'insurance-' + (visa.visaId || visa.packageClassId)">
+                        <p class="title">Medical insurance</p>
+                        <span class="sub_title" v-html="visa.insurance"></span>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</div>
+
+                                                <!-- <div id="visa" class="tab-details" v-if="packageDetailsResponse[0].packageDetail.isVisaIncluded === 'Y">
                                                     <div class="tab_card">
                                                         <div class="card_top">
                                                             <img src="/images/tcHolidays/tc-PDP/passport.svg" alt="" />
@@ -1830,9 +1866,9 @@
                                                         </div>
                                                         <div class="tabDetails_wrapper">
                                                             <div class="card_bottom">
-                                                                <div class="comn_blck">
+                                                                <div class="comn_blck" v-if="packageDetailsResponse?[0].packageDetail.isVisaDefaultMsg === 'Y'">
                                                                     <p class="title">Visa requirements</p>
-                                                                    <span class="sub_title">UAE Visa Charges</span>
+                                                                    <span class="sub_title" v-html="packageDetailsResponse[0].packageDetail.visaDefaultMsg">UAE Visa Charges</span>
                                                                 </div>
 
                                                                 <div class="comn_blck">
@@ -1861,147 +1897,57 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </div> -->
                                               
-<div id="meals" class="tab-details">
-  <div class="tab_card">
-    <div class="card_top">
-      <img src="/images/tcHolidays/tc-PDP/meals.svg" alt="" />
-      <h6>Meals</h6>
-    </div>
-    <div class="tabDetails_wrapper">
-      <div class="card_bottom">
-        <div class="comn_blck" v-if="computedMeals.totalDays">
-          <div class="items_inr">
-            <!-- Breakfast -->
-            <div class="item_blck" v-if="computedMeals.breakfastDays">
-              <div class="icon">
-                <img src="/images/tcHolidays/tc-PDP/meal.svg" alt="Breakfast" />
-              </div>
-              <span class="sub_title">
-                {{ computedMeals.breakfastDays }} Daily Breakfast<span
-                  v-if="computedMeals.daysWithoutBreakfast.length"
-                >
-                  (except on Day
-                  {{ computedMeals.daysWithoutBreakfast.join(', ') }})
-                </span>
-              </span>
-            </div>
-
-            <!-- Packed Breakfast (if any) -->
-            <div class="item_blck" v-if="computedMeals.packedBreakfasts">
-              <div class="icon">
-                <img src="/images/tcHolidays/tc-PDP/meals-02.svg" alt="Packed Breakfast" />
-              </div>
-              <span class="sub_title">
-                {{ computedMeals.packedBreakfasts }} Packed Breakfast<span
-                  v-if="computedMeals.packedBreakfasts !== 1"
-                  >s</span>
-              </span>
-            </div>
-
-            <!-- Lunch + Packed Lunch -->
-            <div class="item_blck" v-if="computedMeals.lunchDays || computedMeals.packedLunches">
-              <div class="icon">
-                <img src="/images/tcHolidays/tc-PDP/meals-02.svg" alt="Lunch" />
-              </div>
-              <span class="sub_title">
-                <template v-if="computedMeals.lunchDays">
-                  {{ computedMeals.lunchDays }} Lunch<span v-if="computedMeals.lunchDays !== 1">es</span>
-                </template>
-                <template v-if="computedMeals.packedLunches">
-                  <span v-if="computedMeals.lunchDays">, </span>{{ computedMeals.packedLunches }} Packed Lunch<span
-                    v-if="computedMeals.packedLunches !== 1"
-                    >es</span>
-                </template>
-              </span>
-            </div>
-
-            <!-- Dinner -->
-            <div class="item_blck" v-if="computedMeals.dinnerDays">
-              <div class="icon">
-                <img src="/images/tcHolidays/tc-PDP/meals-02.svg" alt="Dinner" />
-              </div>
-              <span class="sub_title">
-                {{ computedMeals.dinnerDays }} Dinner<span v-if="computedMeals.dinnerDays !== 1">s</span>
-              </span>
-            </div>
-
-            <!-- Example placeholder for cuisine-specific dinners (remove if not needed) -->
-            <div class="item_blck" v-if="computedMeals.dinnerDays">
-              <div class="icon">
-                <img src="/images/tcHolidays/tc-PDP/star-02.svg" alt="Cuisine" />
-              </div>
-              <span class="sub_title">
-                <!-- Adjust logic if you have cuisine breakdown -->
-                Jain / Vegetarian / Non-Vegetarian options (as available)
-              </span>
-            </div>
-
-            <!-- Special Treats (dynamic if you have an array, else fallback) -->
-            <div class="item_blck" v-if="(packageDetailsResponse?.[0]?.packageDetail?.specialTreats || []).length">
-              <div class="icon">
-                <img src="/images/tcHolidays/tc-PDP/star-02.svg" alt="Special Treats" />
-              </div>
-              <span class="sub_title">Special Treats</span>
-            </div>
-          </div>
-
-          <!-- Special Treats List -->
-          <ul
-            class="special_treat unlisted"
-            v-if="(packageDetailsResponse?.[0]?.packageDetail?.specialTreats || []).length"
-          >
-            <li
-              v-for="(treat, tIndex) in packageDetailsResponse[0].packageDetail.specialTreats"
-              :key="'treat-' + tIndex"
-              v-text="treat"
-            ></li>
-          </ul>
-          <ul class="special_treat unlisted" v-else>
-            <li>Mochi Tasting</li>
-            <li>Rice Cracker Tasting</li>
-            <li>Pocky Tasting</li>
-            <li>Sushi Tasting</li>
-          </ul>
-
-          <!-- Optional per-day breakdown -->
-          <div class="note" style="margin-top:12px" v-if="computedMeals.details.length">
-            <span><b>Per Day Summary:</b></span>
-            <ul class="unlisted" style="margin-top:6px">
-              <li
-                v-for="d in computedMeals.details"
-                :key="'day-line-' + d.day"
-              >
-                Day {{ d.day }}:
-                <span v-if="d.breakfast">Breakfast</span>
-                <span v-if="d.packedBreakfast"> (Packed Breakfast)</span>
-                <span v-if="!d.breakfast && !d.packedBreakfast">No Breakfast</span>
-                |
-                <span v-if="d.lunch">Lunch</span>
-                <span v-else>No Lunch</span>
-                <span v-if="d.packedLunch"> (Packed Lunch)</span>
-                |
-                <span v-if="d.dinner">Dinner</span>
-                <span v-else>No Dinner</span>
-              </li>
-            </ul>
-          </div>
-
-          <div class="note">
-            <span>
-              <b>Note:</b> Packed lunches, if applicable, will be Jain / Vegetarian.
-              In some places a cash-out may be provided instead.
-            </span>
-          </div>
+<div id="meals" class="tab-details" v-if="packageDetailsResponse?.[0]?.packageDetail?.isMealsIncluded === 'Y'">
+    <div class="tab_card">
+        <div class="card_top">
+            <img src="/images/tcHolidays/tc-PDP/meals.svg" alt="" />
+            <h6>Meals</h6>
         </div>
+        <div class="tabDetails_wrapper">
+            <div class="card_bottom">
+                <div class="comn_blck">
+                    <!-- Show default meals message -->
+                    <div v-if="packageDetailsResponse?.[0]?.packageDetail?.isMealsDefaultMsg === 'Y'">
+                        <div v-html="packageDetailsResponse[0].packageDetail.mealsDefaultMsg"></div>
+                    </div>
 
-        <div v-else class="comn_blck">
-          <span class="sub_title">Meal information not available.</span>
+                    <!-- Show meals from collection based on package class -->
+                    <template v-else-if="packageDetailsResponse?.[0]?.packageDetail?.isMealsDefaultMsg === 'N' && filteredMealCollection.length > 0">
+                        <div class="items_inr">
+                            <div class="item_blck" v-for="meal in filteredMealCollection" :key="meal.mealId || meal.packageClassId">
+                                <div class="icon">
+                                    <img 
+                                        :src="meal.tcilMstMeal.imagePath ? (imageURL + holidayImageURL + 'meal/' + meal.tcilMstMeal.imagePath) : '/images/tcHolidays/tc-PDP/meal.svg'" 
+                                        :alt="meal.tcilMstMeal.imageAltTag || 'Meal'" />
+                                </div>
+                                <span class="sub_title" v-html="meal.tcilMstMeal.mealDescription"></span>
+                            </div>
+                        </div>
+
+                        <!-- Special treats section (if available in meal data) -->
+                        <template v-if="mealSpecialTreats.length > 0">
+                            <div class="item_blck">
+                                <div class="icon">
+                                    <img src="/images/tcHolidays/tc-PDP/star-02.svg" alt="Special Treats" />
+                                </div>
+                                <span class="sub_title">Special Treats</span>
+                            </div>
+                            <ul class="special_treat unlisted">
+                                <li v-for="(treat, index) in mealSpecialTreats" :key="index">{{ treat }}</li>
+                            </ul>
+                        </template>
+
+                        <!-- Note section (if available) -->
+                        <div class="note" v-if="mealNote">
+                            <span v-html="mealNote"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>
 
 
@@ -2073,6 +2019,7 @@
                                                         </div>
                                                     </div>
                                                 </div> -->
+                                                
                                                 <div id="transfer" class="tab-details">
                                                     <div class="tab_card">
                                                         <div class="card_top">
@@ -2124,7 +2071,89 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div id="Others" class="tab-details">
+
+
+
+                            <!-- Others Tab - Inclusions -->
+<div id="Others" class="tab-details">
+    <div class="tab_card">
+        <div class="card_top">
+            <img src="/images/tcHolidays/tc-PDP/check-white.svg" alt="" />
+            <h6>What your tour price includes?</h6>
+        </div>
+        <div class="tabDetails_wrapper">
+            <div class="card_bottom">
+                <div class="comn_blck">
+                    
+                    <!-- Check if inclusions data exists -->
+                    <div>
+                        <!-- Loop through inclusion/exclusion collection -->
+                        <ul class="ul_withImg" v-for="(item,index) in inclusionExclusionCollection" key="item.packageClassId">
+                             <li v-if="item.packageClassId === selectedPackageClassId"><img src="/images/tcHolidays/tc-PDP/check.svg" alt="" />
+                            <span  v-html="item.includes"></span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Fallback static content if no data -->
+                    <!-- <ul class="ul_withImg" v-else>
+                        <li><img src="/images/tcHolidays/tc-PDP/check.svg" alt="" /> Return economy class group airfare as per the itinerary.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/check.svg" alt="" /> All local taxes and services as of current date.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/check.svg" alt="" /> Cost of Visa and Medical Insurance for the duration of the tour.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/check.svg" alt="" /> Sightseeing and accommodation as per the above-mentioned itinerary.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/check.svg" alt="" /> All transfers and extensive excursions with entrance fees (as specified in the itinerary) by a deluxe air-conditioned coach.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/check.svg" alt="" /> Services of a professional, friendly and multilingual Tour Manager or a local Representative. (Subject to minimum 15 customers).</li>
+                    </ul> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exclusions Tab -->
+<div id="exclusions" class="tab-details exclusions_ttn">
+    <div class="tab_card">
+        <div class="card_top">
+            <img src="/images/tcHolidays/tc-PDP/x-close-white.svg" alt="" />
+            <h6>What your tour price does not include?</h6>
+        </div>
+        <div class="tabDetails_wrapper">
+            <div class="card_bottom">
+                <div class="comn_blck">
+                    <!-- Check if exclusions data exists -->
+                    <div v-if="inclusionExclusionCollection && inclusionExclusionCollection.length > 0">
+                        <!-- Loop through inclusion/exclusion collection -->
+                         <div>
+                        <!-- Loop through inclusion/exclusion collection -->
+                        <ul class="ul_withImg" v-for="(item,index) in inclusionExclusionCollection" key="item.packageClassId">
+                             <li v-if="item.packageClassId === selectedPackageClassId"><img src="/images/tcHolidays/tc-PDP/x-close.svg">
+                            <span  v-html="item.excludes"></span></li>
+                        </ul>
+                    </div>
+
+                    </div>
+
+                    <!-- Fallback static content if no data -->
+                    <ul class="ul_withImg" v-else>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> If you wish to travel in advance i.e., before the published departure date as mentioned in the brochure or like to come back on a later date after the tour ends, there will be an additional charge that will be applicable (subject to availability of seats for the given dates & ticket validity) which will be advised to you by our sales staff / travel agent. Kindly note, the deviation will be actioned only 30 Days prior to departure date.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> Tipping is expected from anyone providing your service e.g., Coach Driver, Local Guides, Hotel & Restaurant staff etc. It is mandatory to tip a nominal amount per person/per day.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> Cost of Basic Travel Quota equivalent to USD 250,000.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> Any increase in the airfare charged by the airline on your air ticket</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> Government Taxes as applicable are extra.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> The tour cost does not include POE charges and passport charges.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> No porterage included.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> Any expenses of a personal nature such as porterage, laundry expenses, wines, mineral water, food and drink not in the regular menu provided by us, minibar, telephone calls, etc.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> Meals other than that are mentioned in your itinerary.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> Cost of excursions, city sightseeing, entrance fees and local guides availed of by the passengers, other than that mentioned in your itinerary.</li>
+                        <li><img src="/images/tcHolidays/tc-PDP/x-close.svg" alt="" /> Private airport transfers, Cost of Suggested / Optional Excursions.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+                                                
+                                                <!-- <div id="Others" class="tab-details">
                                                     <div class="tab_card">
                                                         <div class="card_top">
                                                             <img src="/images/tcHolidays/tc-PDP/check-white.svg" alt="" />
@@ -2251,7 +2280,9 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </div> -->
+
+
                                                 <div id="things-to-note" class="tab-details exclusions_ttn">
                                                     <div class="tab_card">
                                                         <div class="card_top">
@@ -2328,7 +2359,7 @@
               </span>
             </div>
             <div class="db_item">
-              <img src="/images/tcHolidays/tc-PDP/camera-01.svg" alt="" />
+              <img src="/images/tcHolidays/tc-PDP/camera-01.svg" alt="" v-if="getSightSeeingByDayAndPackage(item.day, item.packageClassId)?.sightseeingId" />
               <span>{{getSightSeeingByDayAndPackage(item.day, item.packageClassId)?.sightseeingId?.name }} </span>
             </div>
             <div class="db_item">
@@ -2705,7 +2736,37 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="tab-pane fade" id="nav-highlights" role="tabpanel"
+
+
+
+
+                                    <div class="tab-pane fade" id="nav-highlights" role="tabpanel" aria-labelledby="nav-highlights-tab">
+    <div class="tab-container tab_highlights"  v-if="packageDetailsResponse?.[0]?.packageDetail?.overviewHighlights">
+        <div class="tab-right">
+            <div class="tab_card">
+                <div class="card_top">
+                    <h6>Highlights</h6>
+                </div>
+                <div class="highlights_grid">
+                    <!-- Dynamic highlights from API -->
+                    <span>
+                        <div class="grid_items">
+                            <div class="icon">
+                                <img src="/images/tcHolidays/tc-PDP/polygon.svg" alt="" />
+                            </div>
+                            <div v-html="packageDetailsResponse[0].packageDetail.overviewHighlights"></div>
+                        </div>
+                    </span>
+
+                    <!-- Fallback static highlights if no API data -->
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                                   
+                                    <!-- <div class="tab-pane fade" id="nav-highlights" role="tabpanel"
                                         aria-labelledby="nav-highlights-tab">
                                         <div class="tab-container tab_highlights">
                                             <div class="tab-right">
@@ -2777,5 +2838,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
+                                
                                 </div>
