@@ -3,7 +3,7 @@
                                         aria-labelledby="nav-itinerary-tab">
                                         <div class="tab-container tab_itinerary">
                                             <div class="tab-left">
-                                                <div class="tabs" v-if="packageDetailsResponse.length > 0">
+                                                <div class="tabs" >
                                                     <div class="tab-indicator"></div>
                                          <!---<button class="tab-btn active" data-tab="tab1">Day 1</button>
                                                     <button class="tab-btn" data-tab="tab2">Day 2</button>
@@ -18,6 +18,7 @@
                                                     <button class="tab-btn" data-tab="tab11">Day 11</button>--->
 													 <button
             v-for="(day, index) in sortItineraryByDay()"
+			
             :key="day.itineraryDay"
             class="tab-btn"
             :class="{ active: index === 0 }"
@@ -28,146 +29,193 @@
 		 
         </div>
                                                 </div>
+                                               
+
                                                 <div class="tab-right itinerary_details">
 
-                                                        <div 
-  :id="tab + `${index + 1}`" 
-  v-if="sortItineraryByDay()" 
-  class="tab-details"  
-  v-for="(item, index) in sortItineraryByDay()"
-  :key="`${item.itineraryDay}-${index}`">
-  
-  <div class="accordion">
-    <div class="accordion-item">
-      <div class="left_blc">
-        <h6 class="accordion-header">
-          <span class="day_chip">Day {{ item.itineraryDay }}</span>
-          {{ item.cityCode.cityName }}
-          <span class="wlcm_text" v-if="item.itineraryDay === 1">
-            (Welcome to {{ item.cityCode.cityName }}!)
-          </span>
-        </h6>
+  <div 
+    :id="tab + `${index + 1}`" 
+    v-if="sortItineraryByDay()" 
+    class="tab-details"  
+    v-for="(item, index) in sortItineraryByDay()"
+    :key="`${item.itineraryDay}-${index}`">
+    
+    <div class="accordion">
+      <div class="accordion-item">
+        <div class="left_blc">
+          <h6 class="accordion-header">
+            <span class="day_chip">Day {{ item.itineraryDay }}</span>
+            {{ item.cityCode.cityName }}
+            <span class="wlcm_text" v-if="item.itineraryDay === 1">
+              (Welcome to {{ item.cityCode.cityName }}!)
+            </span>
+          </h6>
+        </div>
+        <div class="right_arrow">
+          <img src="/images/tcHolidays/chevron-down.svg" alt="Toggle" />
+        </div>
       </div>
-      <div class="right_arrow">
-        <img src="/images/tcHolidays/chevron-down.svg" alt="Toggle" />
-      </div>
-    </div>
 
-    <div class="accordion-body">
-      <div class="content_box">
-        
-        <!-- Arrival Card -->
-        <div class="card_blc">
-          <div class="card_top">
-            <div class="icon">
-              <img src="/images/tcHolidays/tc-PDP/plane.svg" alt="Arrival" />
-            </div>
-            <span>Arrival in {{ item.cityCode.cityName }}</span>
-          </div>
-          <span class="sub_title" v-html="item.itineraryDescription"></span>
-        </div>
-
-        <!-- Transfer Card - Show only if transit data exists -->
-        <div class="card_blc" v-if="item.tcilHolidayItineraryTransitCollection && item.tcilHolidayItineraryTransitCollection.length > 0">
-          <div class="card_top">
-            <div class="icon">
-              <img src="/images/tcHolidays/tc-PDP/car.svg" alt="Transfer" />
-            </div>
-            <span>Transfer</span>
-          </div>
-          <div v-for="(transit, tIndex) in item.tcilHolidayItineraryTransitCollection" :key="tIndex">
-            <span class="sub_title" v-html="transit.description || 'On arrival, our Tour MANAGER / Local Representative will meet and welcome you outside the airport. Later, we proceed to the hotel and check–in.'"></span>
-          </div>
-        </div>
-
-        <!-- Default Transfer Card if no transit data -->
-        <div class="card_blc" v-else>
-          <div class="card_top">
-            <div class="icon">
-              <img src="/images/tcHolidays/tc-PDP/car.svg" alt="Transfer" />
-            </div>
-            <span>Transfer</span>
-          </div>
-          <span class="sub_title">
-            On arrival, our Tour Manager / Local Representative will meet and welcome you outside the airport. 
-            Later, we proceed to the hotel and check–in.
-          </span>
-        </div>
-
-        <!-- Hotels Card -->
-        <div class="card_blc">
-          <div class="card_top">
-            <div class="icon">
-              <img src="/images/tcHolidays/tc-PDP/hotels.svg" alt="Hotels" />
-            </div>
-            <span>Hotels</span>
-          </div>
+      <div class="accordion-body">
+        <div class="content_box">
           
-          <!-- Overnight Stay Info -->
-          <div class="overnight_info" v-if="item.overnightStay">
-            <span class="sub_title" v-html="item.overnightStay"></span>
+          <!-- Arrival Card -->
+          <div class="card_blc">
+            <div class="card_top">
+              <div class="icon">
+                <img src="/images/tcHolidays/tc-PDP/plane.svg" alt="Arrival" />
+              </div>
+              <span>Arrival in {{ item.cityCode.cityName }}</span>
+            </div>
+            <span class="sub_title" v-html="item.itineraryDescription"></span>
           </div>
 
-          <!-- Hotel Carousel - You can populate this dynamically if you have hotel array data -->
-          <div class="hotelCard_slide owl-carousel" v-if="false">
-            <div class="card_item">
-              <div class="crb_lft">
-                <img src="/images/tcHolidays/tc-PDP/building.svg" alt="Hotel" />
+          <!-- Transfer Card -->
+          <div class="card_blc">
+            <div class="card_top">
+              <div class="icon">
+                <img src="/images/tcHolidays/tc-PDP/car.svg" alt="Transfer" />
               </div>
-              <div class="crb_right">
-                <span class="sub_title">Hotel Name</span>
-                <div class="rating">
-                  <span class="stars">
-                    <img src="/images/tcHolidays/star.svg" alt="Star" />
-                  </span>
-                  <span><b>4.5</b>(1.5K)</span>
+              <span>Transfer</span>
+            </div>
+            <span class="sub_title" v-if="getTransfersByDayAndPackage(item.itineraryDay, selectedPackageClassId)" v-html="getTransfersByDayAndPackage(item.itineraryDay, item.packageClassId)?.description"></span>
+            <!-- <span class="sub_title" v-else>
+              On arrival, our Tour Manager / Local Representative will meet and welcome you outside the airport. 
+              Later, we proceed to the hotel and check–in.
+            </span> -->
+          </div>
+
+          <!-- Sightseeing Card -->
+          <div class="card_blc" v-if="getSightSeeingByDayAndPackage(item.itineraryDay, selectedPackageClassId)">
+            <div class="card_top">
+              <div class="icon">
+                <img src="/images/tcHolidays/tc-PDP/camera-01.svg" alt="Sightseeing" />
+              </div>
+              <p>Sightseeing</p>
+            </div>
+            <div class="sight_blc">
+              <div class="sight_item">
+                <div class="sight_left">
+                  <img :src="getSightSeeingByDayAndPackage(item.itineraryDay,selectedPackageClassId)?.sightseeingId?.tcilMstSightseeingImagesCollection?.[0]?.imageUrl || '/images/tcHolidays/tc-PDP/sight-01.png'" alt="Sightseeing" />
+                </div>
+                <div class="sight_right">
+                  <p v-html="getSightSeeingByDayAndPackage(item.itineraryDay,selectedPackageClassId)?.sightseeingId?.name || ''"></p>
+                  <span v-html="getSightSeeingByDayAndPackage(item.itineraryDay, selectedPackageClassId)?.sightseeingId?.description || 'No description available'"></span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="short_note">
-            <span>Note:</span> The above mentioned hotels will be same or similar
-          </div>
-        </div>
 
-        <!-- Meal Card -->
-        <div class="card_blc">
-          <div class="card_top">
-            <div class="icon">
-              <img src="/images/tcHolidays/tc-PDP/meal.svg" alt="Meals" />
-            </div>
-            <span>Meal</span>
-          </div>
-          <span class="sub_title" v-html="item.mealDescription"></span>
-        </div>
+           <div class="card_blc" v-if="getHotelsByDayAndPackage(item.itineraryDay, selectedPackageClassId)">
+    <div class="card_top">
+      <div class="icon">
+        <img src="/images/tcHolidays/tc-PDP/hotels.svg" alt="Hotels Icon" />
+      </div>
+      <p>Hotels</p>
+    </div>
 
-        <!-- Optional Activities -->
-        <div class="card_blc" v-if="item.tcilHolidayItineraryOptionalsCollection && item.tcilHolidayItineraryOptionalsCollection.length > 0">
-          <div class="card_top">
-            <div class="icon">
-              <img src="/images/tcHolidays/tc-PDP/activity.svg" alt="Activities" />
-            </div>
-            <span>Optional Activities</span>
-          </div>
-          <div v-for="(optional, oIndex) in item.tcilHolidayItineraryOptionalsCollection" :key="oIndex" class="optional_item">
-            <span class="sub_title" v-html="optional.description"></span>
-          </div>
+    <div class="hotelCard_slide owl-carousel">
+      <div class="card_item" v-for="(hotel, index) in getHotelsByDayAndPackage(item.itineraryDay, selectedPackageClassId)" :key="index">
+        <div class="crb_lft">
+          <img :src="getHotelImage(hotel)" :alt="hotel.accomodationHotelId.hotelName" />
         </div>
-
-        <!-- Note Block -->
-        <div class="note_blc">
-          <span>
-            <span>Note:</span> Joining direct passenger / NRI can check-in on your own at the hotel. 
-            The standard check-in time is 1500 hrs. We may have to proceed directly for dinner or 
-            packed dinner will be provided in case of late arrivals of flight or long queue at the immigration.
+        <div class="crb_right">
+          <span class="sub_title">
+            {{ hotel.accomodationHotelId.hotelName }}
           </span>
+          <div class="rating">
+            <span class="stars">
+              <img src="/images/tcHolidays/star.svg" alt="star" />
+            </span>
+            <span>
+              <b>{{ hotel.accomodationHotelId.starRating }}</b>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="short_note">
+      <span>Note:</span> The above mentioned hotels will be same or similar
+    </div>
+  </div>
+
+
+          <!-- Hotels Card -->
+          <!-- <div class="card_blc">
+            <div class="card_top">
+              <div class="icon">
+                <img src="/images/tcHolidays/tc-PDP/hotels.svg" alt="Hotels" />
+              </div>
+              <span>Hotels</span>
+            </div> -->
+            
+            <!-- Overnight Stay Info -->
+            <!-- <div class="overnight_info" v-if="item.overnightStay">
+              <span class="sub_title" v-html="item.overnightStay"></span>
+            </div> -->
+
+            <!-- Hotel Carousel - You can populate this dynamically if you have hotel array data -->
+            <!-- <div class="hotelCard_slide owl-carousel" v-if="false">
+              <div class="card_item">
+                <div class="crb_lft">
+                  <img src="/images/tcHolidays/tc-PDP/building.svg" alt="Hotel" />
+                </div>
+                <div class="crb_right">
+                  <span class="sub_title">Hotel Name</span>
+                  <div class="rating">
+                    <span class="stars">
+                      <img src="/images/tcHolidays/star.svg" alt="Star" />
+                    </span>
+                    <span><b>4.5</b>(1.5K)</span>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+
+            <!-- <div class="short_note">
+              <span>Note:</span> The above mentioned hotels will be same or similar
+            </div>
+          </div> -->
+
+          <!-- Meal Card -->
+          <div class="card_blc">
+            <div class="card_top">
+              <div class="icon">
+                <img src="/images/tcHolidays/tc-PDP/meal.svg" alt="Meals" />
+              </div>
+              <span>Meal</span>
+            </div>
+            <span class="sub_title">{{ getMealText(item.itineraryDay, selectedPackageClassId) }}</span>
+          </div>
+
+          <!-- Optional Activities -->
+          <div class="card_blc" v-if="item.tcilHolidayItineraryOptionalsCollection && item.tcilHolidayItineraryOptionalsCollection.length > 0">
+            <div class="card_top">
+              <div class="icon">
+                <img src="/images/tcHolidays/tc-PDP/activity.svg" alt="Activities" />
+              </div>
+              <span>Optional Activities</span>
+            </div>
+            <div v-for="(optional, oIndex) in item.tcilHolidayItineraryOptionalsCollection" :key="oIndex" class="optional_item">
+              <span class="sub_title" v-html="optional.description"></span>
+            </div>
+          </div>
+
+          <!-- Note Block -->
+          <div class="note_blc">
+            <span>
+              <span>Note:</span> Joining direct passenger / NRI can check-in on your own at the hotel. 
+              The standard check-in time is 1500 hrs. We may have to proceed directly for dinner or 
+              packed dinner will be provided in case of late arrivals of flight or long queue at the immigration.
+            </span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-                                                </div>
                                             
                                             <!-- <div class="tab-right itinerary_details">
                                                 <div id="tab1" class="tab-details">
@@ -1531,6 +1579,7 @@
                                                     </div>
                                                 </div>
                                             </div> -->
+                                       
                                         </div>
                                     </div>
                                     <div class="tab-pane fade" id="nav-inclusions" role="tabpanel"
