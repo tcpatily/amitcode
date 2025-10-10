@@ -9,7 +9,14 @@ createApp({
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(name) || '';
         }
+             const activeTab = ref(0);
+			 
+ const setActiveTab = (index) => {
+  activeTab.value = index;
+};
 
+ const { baseImageURL } = getBaseConfig()
+ 
         const packageDetailsResponse = ref([]);
         const productId = ref('');
         const isFlightDefaultMsg = ref('N'); // 'Y' or 'N'
@@ -26,10 +33,28 @@ createApp({
          const payablePrice = ref(0);
          const packageId = ref("");
         // PKG012780 , PKG012817 , PKG003032
+        watch(() => selectedPackageClassId.value, (newVal) => {
+            console.log("Selected Package Class ID changed to:", newVal);
+            if(typeof selectedPackageClassId.value === 'string'){
+                selectedPackageClassId.value = parseInt(selectedPackageClassId.value);
+            }
+        }, { immediate: true });
 
       
 
+      const handleImagePath = (imagePath) => {
+            if (imagePath) {
+                return `${baseImageURL}/holidays/${packageId.value}/itinerary/${imagePath}`;
+            }   
+        }
 
+          const getFlagByIndex = (flagString, index) => {
+    if (!flagString) return '';
+    const parts = flagString.split('-');
+    return parts[index] || '';
+  };
+
+  
         async function getPackagedetails() {
 
             try {
@@ -324,11 +349,10 @@ createApp({
 const getHotelImage = (hotel) => {
     const images = hotel.accomodationHotelId?.tcilMstHolidayAccomodationImageCollection;
     if (images && images.length > 0) {
-      return `/images/tcHolidays/tc-PDP/${images[0].imagePath}`;
+      return `${holidayContextRoot}/images/tcHolidays/tc-PDP/${images[0].imagePath}`;
     }
-    return `/images/tcHolidays/tc-PDP/building.svg`; // default image
+    return `assets/img/pdp/building.svg`; // default image
   };
-
  
 
 
@@ -483,9 +507,6 @@ const getHotelImage = (hotel) => {
         const modifyLtHubCity = () => {
             console.log('Hub city changed to:', ltHubCode.value);
             
-            // Update session storage
-            sessionStorage.setItem('hubCityCode', ltHubCode.value);
-            
             // Reset package class when hub changes and auto-select first available
             let newTourTypeOptions = [];
             
@@ -508,26 +529,39 @@ const getHotelImage = (hotel) => {
             }
             
             if (newTourTypeOptions.length > 0) {
-                selectedPackageClassId.value = newTourTypeOptions[0].pkgClassId;
-                console.log('Auto-selected package class:', selectedPackageClassId.value);
+                const newPackageClassId = newTourTypeOptions[0].pkgClassId;
+                selectedPackageClassId.value = newPackageClassId;
+                console.log('🎯 HolidayPdp: Auto-selected package class:', newPackageClassId);
+                
+                // Ensure global sync
+                if (window.selectedPackageClassId) {
+                    window.selectedPackageClassId.value = newPackageClassId;
+                }
             } else {
                 // No options available, clear selection
                 selectedPackageClassId.value = '';
-                console.log('No tour type options available');
+                console.log('⚠️ No tour type options available');
+                
+                // Ensure global sync for cleared selection
+                if (window.selectedPackageClassId) {
+                    window.selectedPackageClassId.value = '';
+                }
             }
         };
 
         // Handle package class change for tour type dropdown
         const modifyPkgClass = () => {
-            console.log('Package class changed to:', selectedPackageClassId.value);
-            
-            // Update session storage
-            sessionStorage.setItem('pkgClassId', selectedPackageClassId.value);
+            console.log('🎯 HolidayPdp: modifyPkgClass called - Package class:', selectedPackageClassId.value);
             
             // Update payable price when tour type changes
             payablePrice.value = currentStartingPrice.value;
             
-            console.log('Starting price updated:');
+            // Ensure global sync (watcher will handle this, but being explicit)
+            if (window.selectedPackageClassId) {
+                window.selectedPackageClassId.value = selectedPackageClassId.value;
+            }
+            
+            console.log('✅ Starting price updated:');
             console.log('- Selected Package Class:', selectedPackageClassId.value);
             console.log('- Current Starting Price:', currentStartingPrice.value);
             console.log('- Payable Price:', payablePrice.value);
@@ -673,6 +707,64 @@ const getHotelImage = (hotel) => {
             return currentStrikeoutPrice.value > 0 && discountPercentage.value > 0;
         });
 
+        // Flag to prevent circular updates
+        let isReceivingExternalUpdate = false;
+
+        // Watch for selectedPackageClassId changes and sync globally
+        watch(selectedPackageClassId, (newValue, oldValue) => {
+            if (!isReceivingExternalUpdate) {
+                console.log('🔄 HolidayPdp: selectedPackageClassId changed:', oldValue, '→', newValue);
+                
+                // Update global window variable for synchronization
+                if (window.selectedPackageClassId) {
+                    window.selectedPackageClassId.value = newValue;
+                    console.log('✅ HolidayPdp: Global selectedPackageClassId updated:', newValue);
+                }
+                
+                // Dispatch custom event for cross-app communication
+                window.dispatchEvent(new CustomEvent('selectedPackageClassIdChanged', { 
+                    detail: { 
+                        newValue, 
+                        oldValue,
+                        source: 'holidayPdp'
+                    } 
+                }));
+            }
+        }, { immediate: true });
+
+        // Listen for external selectedPackageClassId changes
+        window.addEventListener('selectedPackageClassIdChanged', (event) => {
+            if (event.detail.source !== 'holidayPdp' && !isReceivingExternalUpdate) {
+                console.log('🔔 HolidayPdp: Received external change event:', event.detail);
+                isReceivingExternalUpdate = true;
+                selectedPackageClassId.value = event.detail.newValue;
+                setTimeout(() => { isReceivingExternalUpdate = false; }, 10);
+            }
+        });
+
+        // Global helper functions for testing synchronization
+        window.testTourTypeSync = () => {
+            console.log('=== Tour Type Synchronization Test ===');
+            console.log('HolidayPdp selectedPackageClassId:', selectedPackageClassId.value);
+            console.log('Global selectedPackageClassId:', window.selectedPackageClassId?.value);
+            console.log('Are they synchronized?', selectedPackageClassId.value === window.selectedPackageClassId?.value);
+            return {
+                local: selectedPackageClassId.value,
+                global: window.selectedPackageClassId?.value,
+                synchronized: selectedPackageClassId.value === window.selectedPackageClassId?.value
+            };
+        };
+
+        window.setTourTypeTest = (value) => {
+            console.log('🧪 Testing: Setting selectedPackageClassId to:', value);
+            selectedPackageClassId.value = value;
+            return window.testTourTypeSync();
+        };
+
+        console.log('🚀 Synchronization Test Functions Available:');
+        console.log('  - testTourTypeSync() - Check current synchronization status');
+        console.log('  - setTourTypeTest(value) - Test setting value (0=Standard, 1=Value, 2=Premium)');
+
         return {
             selectedPackageClassId,
             packageDetailsResponse,
@@ -717,6 +809,11 @@ const getHotelImage = (hotel) => {
             getMealByDayAndPackage,
             getHotelsByDayAndPackage,
 			getHotelImage,
+			setActiveTab,
+			activeTab,
+            handleImagePath,
+            getFlagByIndex
+			
         };
     },
 }).mount(".holiday-pdp-page");

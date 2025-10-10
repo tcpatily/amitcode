@@ -1,0 +1,140 @@
+ <div class="tab-right itinerary_details">
+
+                                                        <div 
+  :id="tab + `${index + 1}`" 
+  v-if="sortItineraryByDay()" 
+  class="tab-details"  
+  v-for="(item, index) in sortItineraryByDay()"
+  :key="`${item.itineraryDay}-${index}`">
+  
+  <div class="accordion">
+    <div class="accordion-item">
+      <div class="left_blc">
+        <h6 class="accordion-header">
+          <span class="day_chip">Day {{ item.itineraryDay }}</span>
+          {{ item.cityCode.cityName }}
+          <span class="wlcm_text" v-if="item.itineraryDay === 1">
+            (Welcome to {{ item.cityCode.cityName }}!)
+          </span>
+        </h6>
+      </div>
+      <div class="right_arrow">
+        <img src="/images/tcHolidays/chevron-down.svg" alt="Toggle" />
+      </div>
+    </div>
+
+    <div class="accordion-body">
+      <div class="content_box">
+        
+        <!-- Arrival Card -->
+        <div class="card_blc">
+          <div class="card_top">
+            <div class="icon">
+              <img src="/images/tcHolidays/tc-PDP/plane.svg" alt="Arrival" />
+            </div>
+            <span>Arrival in {{ item.cityCode.cityName }}</span>
+          </div>
+          <span class="sub_title" v-html="item.itineraryDescription"></span>
+        </div>
+
+        <!-- Transfer Card - Show only if transit data exists -->
+        <div class="card_blc" v-if="item.tcilHolidayItineraryTransitCollection && item.tcilHolidayItineraryTransitCollection.length > 0">
+          <div class="card_top">
+            <div class="icon">
+              <img src="/images/tcHolidays/tc-PDP/car.svg" alt="Transfer" />
+            </div>
+            <span>Transfer</span>
+          </div>
+          <div v-for="(transit, tIndex) in item.tcilHolidayItineraryTransitCollection" :key="tIndex">
+            <span class="sub_title" v-html="transit.description || 'On arrival, our Tour MANAGER / Local Representative will meet and welcome you outside the airport. Later, we proceed to the hotel and check–in.'"></span>
+          </div>
+        </div>
+
+        <!-- Default Transfer Card if no transit data -->
+        <div class="card_blc" v-else>
+          <div class="card_top">
+            <div class="icon">
+              <img src="/images/tcHolidays/tc-PDP/car.svg" alt="Transfer" />
+            </div>
+            <span>Transfer</span>
+          </div>
+          <span class="sub_title">
+            On arrival, our Tour Manager / Local Representative will meet and welcome you outside the airport. 
+            Later, we proceed to the hotel and check–in.
+          </span>
+        </div>
+
+        <!-- Hotels Card -->
+        <div class="card_blc">
+          <div class="card_top">
+            <div class="icon">
+              <img src="/images/tcHolidays/tc-PDP/hotels.svg" alt="Hotels" />
+            </div>
+            <span>Hotels</span>
+          </div>
+          
+          <!-- Overnight Stay Info -->
+          <div class="overnight_info" v-if="item.overnightStay">
+            <span class="sub_title" v-html="item.overnightStay"></span>
+          </div>
+
+          <!-- Hotel Carousel - You can populate this dynamically if you have hotel array data -->
+          <div class="hotelCard_slide owl-carousel" v-if="false">
+            <div class="card_item">
+              <div class="crb_lft">
+                <img src="/images/tcHolidays/tc-PDP/building.svg" alt="Hotel" />
+              </div>
+              <div class="crb_right">
+                <span class="sub_title">Hotel Name</span>
+                <div class="rating">
+                  <span class="stars">
+                    <img src="/images/tcHolidays/star.svg" alt="Star" />
+                  </span>
+                  <span><b>4.5</b>(1.5K)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="short_note">
+            <span>Note:</span> The above mentioned hotels will be same or similar
+          </div>
+        </div>
+
+        <!-- Meal Card -->
+        <div class="card_blc">
+          <div class="card_top">
+            <div class="icon">
+              <img src="/images/tcHolidays/tc-PDP/meal.svg" alt="Meals" />
+            </div>
+            <span>Meal</span>
+          </div>
+          <span class="sub_title" v-html="item.mealDescription"></span>
+        </div>
+
+        <!-- Optional Activities -->
+        <div class="card_blc" v-if="item.tcilHolidayItineraryOptionalsCollection && item.tcilHolidayItineraryOptionalsCollection.length > 0">
+          <div class="card_top">
+            <div class="icon">
+              <img src="/images/tcHolidays/tc-PDP/activity.svg" alt="Activities" />
+            </div>
+            <span>Optional Activities</span>
+          </div>
+          <div v-for="(optional, oIndex) in item.tcilHolidayItineraryOptionalsCollection" :key="oIndex" class="optional_item">
+            <span class="sub_title" v-html="optional.description"></span>
+          </div>
+        </div>
+
+        <!-- Note Block -->
+        <div class="note_blc">
+          <span>
+            <span>Note:</span> Joining direct passenger / NRI can check-in on your own at the hotel. 
+            The standard check-in time is 1500 hrs. We may have to proceed directly for dinner or 
+            packed dinner will be provided in case of late arrivals of flight or long queue at the immigration.
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+                                                </div>

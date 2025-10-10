@@ -1,4 +1,4 @@
-<div class="package_gallery">
+<div class="package_gallery" class="holiday-pdp-page">
         <div class="container">
             <div class="row gx-0 justify-content-center">
                 <div class="col-xxxl-9 col-xxl-12">
@@ -77,15 +77,15 @@
 
                             </div>
                             <div class="pbl_btm" >
-                                <span class="text_xs" v-if="packageDetailsResponse?.[0].packageDetail.isFlightIncluded=== 'Y'">
+                                <span class="text_xs" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isFlightIncluded,selectedPackageClassId) === 'Y'">
                                     <img src="/images/tcHolidays/tc-PDP/flights.svg" alt="" />
                                     Flights
                                 </span>
-                                <span class="text_xs" v-if="packageDetailsResponse?.[0]?.packageDetail?.isHotelIncluded === 'Y'" >
+                                <span class="text_xs" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isHotelDetailsIncluded,selectedPackageClassId) === 'Y'" >
                                     <img src="/images/tcHolidays/tc-PDP/hotel.svg" alt="" />
                                     Hotels
                                 </span>
-                                <span class="text_xs" v-if="packageDetailsResponse?.[0]?.packageDetail?.isSightseeingIncluded === 'Y'">
+                                <span class="text_xs" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isSightseeingDetailsIncluded,selectedPackageClassId) === 'Y'">
                                     <img src="/images/tcHolidays/tc-PDP/camera.svg" alt="" />
                                     Sightseeing
                                 </span>
@@ -93,7 +93,7 @@
                                     <img src="/images/tcHolidays/tc-PDP/visa.svg" alt="" />
                                     Visa
                                 </span>
-                                <span class="text_xs" v-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaIncluded === 'Y'">
+                                <span class="text_xs" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isMealDetailsIncluded,selectedPackageClassId) === 'Y'">
                                     <img src="/images/tcHolidays/tc-PDP/meal-02.svg" alt="" />
                                     Meal
                                 </span>
@@ -106,7 +106,7 @@
                         <div class="pib_rigt">
                             <button class="btn btn_wishlist"><img src="/images/tcHolidays/tc-PDP/heart-outline-01.svg" alt="" />
                                 Add to Wishlist</button>
-                            <div class="pibr_btm">
+                            <div class="pibr_btm" v-if="packageDetailsResponse?.[0]?.packageDetail?.isTcilRecomended==='Most Booked'">
                                 <div class="pibr_lft">
                                     <div class="pibr_top">
                                         <span><img src="/images/tcHolidays/tc-PDP/leaf-01.svg" alt="" /></span>

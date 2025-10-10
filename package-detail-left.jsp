@@ -34,7 +34,7 @@
                                                 <div class="tab-right itinerary_details">
 
   <div 
-    :id="tab + `${index + 1}`" 
+    :id="'tab' + `${index + 1}`" 
     v-if="sortItineraryByDay()" 
     class="tab-details"  
     v-for="(item, index) in sortItineraryByDay()"
@@ -78,7 +78,7 @@
               </div>
               <span>Transfer</span>
             </div>
-            <span class="sub_title" v-if="getTransfersByDayAndPackage(item.itineraryDay, selectedPackageClassId)" v-html="getTransfersByDayAndPackage(item.itineraryDay, item.packageClassId)?.description"></span>
+            <span class="sub_title" v-if="getTransfersByDayAndPackage(item.itineraryDay, selectedPackageClassId)" v-html="getTransfersByDayAndPackage(item.itineraryDay, selectedPackageClassId)?.description"></span>
             <!-- <span class="sub_title" v-else>
               On arrival, our Tour Manager / Local Representative will meet and welcome you outside the airport. 
               Later, we proceed to the hotel and check–in.
@@ -93,10 +93,11 @@
               </div>
               <p>Sightseeing</p>
             </div>
-            <div class="sight_blc">
+            <div class="sight_blc" v-for="(image, index) in getSightSeeingByDayAndPackage(item.itineraryDay,selectedPackageClassId)?.sightseeingId?.tcilMstSightseeingImagesCollection" :key="index">
+             
               <div class="sight_item">
                 <div class="sight_left">
-                  <img :src="getSightSeeingByDayAndPackage(item.itineraryDay,selectedPackageClassId)?.sightseeingId?.tcilMstSightseeingImagesCollection?.[0]?.imageUrl || '/images/tcHolidays/tc-PDP/sight-01.png'" alt="Sightseeing" />
+                  <img :src="handleImagePath(image?.imagePath)" alt="Sightseeing" />
                 </div>
                 <div class="sight_right">
                   <p v-html="getSightSeeingByDayAndPackage(item.itineraryDay,selectedPackageClassId)?.sightseeingId?.name || ''"></p>
@@ -129,7 +130,7 @@
               <img src="/images/tcHolidays/star.svg" alt="star" />
             </span>
             <span>
-              <b>{{ hotel.accomodationHotelId.starRating }}</b>
+              <b>{{ hotel.accomodationHotelId.starRating }}</b>(1.5K)
             </span>
           </div>
         </div>
@@ -1588,14 +1589,14 @@
                                             <div class="tab-left">
                                                 <div class="tabs">
                                                     <div class="tab-indicator"></div>
-                                                    <button class="tab-btn active" data-tab="flights">Flights</button>
-                                                    <button class="tab-btn" data-tab="hotels">Hotels</button>
-                                                    <button class="tab-btn" data-tab="sightseeing">Sightseeing</button>
-                                                    <button class="tab-btn" data-tab="visa">Visa</button>
-                                                    <button class="tab-btn" data-tab="insurance">Insurance</button>
-                                                    <button class="tab-btn" data-tab="meals">Meals</button>
+                                                    <button class="tab-btn active" data-tab="flights"  v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isFlightIncluded,selectedPackageClassId) === 'Y'" >Flights</button>
+                                                    <button class="tab-btn" data-tab="hotels" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isHotelDetailsIncluded,selectedPackageClassId) === 'Y'" >Hotels</button>
+                                                    <button class="tab-btn" data-tab="sightseeing" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isSightseeingDetailsIncluded,selectedPackageClassId) === 'Y'" >Sightseeing</button>
+                                                    <button class="tab-btn" data-tab="visa" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isVisaIncluded,selectedPackageClassId) === 'Y'" >Visa</button>
+                                                    <button class="tab-btn" data-tab="insurance" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isInsuranceIncluded,selectedPackageClassId) === 'Y'" >Insurance</button>
+                                                    <button class="tab-btn" data-tab="meals" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isMealDetailsIncluded,selectedPackageClassId) === 'Y'" >Meals</button>
                                                     <button class="tab-btn" data-tab="transfer">Transfer</button>
-                                                    <button class="tab-btn" data-tab="tour-manager">Tour
+                                                    <button class="tab-btn" data-tab="tour-manager" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isTourManagerIncluded,selectedPackageClassId) === 'Y'" >Tour
                                                         Manager</button>
                                                     <button class="tab-btn" data-tab="Others">Others</button>
                                                     <button class="tab-btn tab-highlights"
@@ -1605,7 +1606,7 @@
                                                 </div>
                                             </div>
                                             <div class="tab-right inclusions_details">
-                                                <div id="flights" class="tab-details">
+                                                <div id="flights" class="tab-details" v-if="packageDetailsResponse?.[0]?.packageDetail?.isFlightIncluded==='Y'">
                                                     <div class="tab_card">
                                                         <div class="card_top">
                                                             <img src="/images/tcHolidays/tc-PDP/plane-01.svg" alt="" />
@@ -1620,7 +1621,7 @@
                                                 </div>
 
                                                 
-<div id="hotels" class="tab-details">
+<div id="hotels" class="tab-details" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isHotelDetailsIncluded,selectedPackageClassId) === 'Y'">
     <div class="tab_card">
         <div class="card_top">
             <img src="/images/tcHolidays/tc-PDP/building-03.svg" alt="" />
@@ -1711,7 +1712,7 @@
                                                 </div> -->
                                                
 
-<div id="sightseeing" class="tab-details">
+<div id="sightseeing" class="tab-details" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isSightseeingDetailsIncluded,selectedPackageClassId) === 'Y'">
     <div class="tab_card">
         <div class="card_top">
             <img src="/images/tcHolidays/tc-PDP/camera-02.svg" alt="" />
@@ -1848,7 +1849,7 @@
 
 
 
-                                                 <div id="visa" class="tab-details" v-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaIncluded === 'Y'">
+                                                 <div v-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaIncluded === 'Y'" id="visa" class="tab-details">
     <div class="tab_card">
         <div class="card_top">
             <img src="/images/tcHolidays/tc-PDP/passport.svg" alt="" />
@@ -1879,7 +1880,7 @@
     </div>
 </div>
 
-<div id="insurance" class="tab-details" v-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaIncluded === 'Y'">
+<div id="insurance" class="tab-details" v-if="packageDetailsResponse?.[0]?.packageDetail?.isInsuranceIncluded === 'Y'">
     <div class="tab_card">
         <div class="card_top">
             <img src="/images/tcHolidays/tc-PDP/shield-tick.svg" alt="" />
@@ -1888,15 +1889,15 @@
         <div class="tabDetails_wrapper">
             <div class="card_bottom">
                 <!-- Show default insurance message -->
-                <template v-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaDefaultMsg === 'Y'">
+                <template v-if="packageDetailsResponse?.[0]?.packageDetail?.isInsuranceDefaultMsg === 'Y'">
                     <div class="comn_blck">
                         <p class="title">Medical insurance</p>
-                        <span class="sub_title">Travel Insurance as required for the package (For passengers till 60 years of age)</span>
+                        <span class="sub_title" v-html="packageDetailsResponse[0].packageDetail.insuranceDefaultMsg"></span>
                     </div>
                 </template>
 
                 <!-- Show insurance from collection based on package class -->
-                <template v-else-if="packageDetailsResponse?.[0]?.packageDetail?.isVisaDefaultMsg === 'N'">
+                <template v-else-if="packageDetailsResponse?.[0]?.packageDetail?.isInsuranceDefaultMsg === 'N'">
                     <div class="comn_blck" v-for="visa in filteredVisaCollection" :key="'insurance-' + (visa.visaId || visa.packageClassId)">
                         <p class="title">Medical insurance</p>
                         <span class="sub_title" v-html="visa.insurance"></span>
@@ -1948,7 +1949,7 @@
                                                     </div>
                                                 </div> -->
                                               
-<div id="meals" class="tab-details" v-if="packageDetailsResponse?.[0]?.packageDetail?.isMealsIncluded === 'Y'">
+<div id="meals" class="tab-details" v-if="getFlagByIndex(packageDetailsResponse?.[0]?.packageDetail?.isMealDetailsIncluded,selectedPackageClassId) === 'Y'">
     <div class="tab_card">
         <div class="card_top">
             <img src="/images/tcHolidays/tc-PDP/meals.svg" alt="" />
@@ -2087,7 +2088,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div id="tour-manager" class="tab-details">
+                                                <div id="tour-manager" class="tab-details" v-if="packageDetailsResponse?.[0]?.packageDetail?.tourManagerDescription=='Y'">
                                                     <div class="tab_card">
                                                         <div class="card_top">
                                                             <img src="/images/tcHolidays/tc-PDP/user-01.svg" alt="" />
@@ -2099,22 +2100,7 @@
                                                                      <span class="sub_title" v-if="packageDetailsResponse[0]?.packageDetail?.tourManagerDescription">
                                                                        {{packageDetailsResponse[0]?.packageDetail?.tourManagerDescription}}
                                                                     </span>
-                                                                    <span class="sub_title">
-                                                                        Rest assured, Thomas Cook's experienced &
-                                                                        knowledgeable tour manager will be with the
-                                                                        group at every step of the journey. Be it
-                                                                        transportation, accommodation &
-                                                                        everything in between, ensuring a seamless &
-                                                                        stress-free travel experience from start to
-                                                                        finish. Whether it's a question or a challenge,
-                                                                        our tour manager is always
-                                                                        readily available to offer support, assistance &
-                                                                        ensure that your trip becomes a most cherished
-                                                                        memory. (Presence of the Tour Manager is subject
-                                                                        to a minimum of 15
-                                                                        - 20 customers, depending on package/destination
-                                                                        booked)
-                                                                    </span>
+                                                                   
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -2396,7 +2382,7 @@
         <div v-for="item in row" :key="item.accomodationDetailId" class="grid_item">
           <div class="days_blck">
             <span>Day {{ item.day }}</span>
-            <p>{{ item.accomodationHotelId.country }}</p>
+            <p>{{ item.accomodationHotelId.city }}</p>
           </div>
           <div class="details_blck">
             <div class="db_item">
@@ -2408,12 +2394,12 @@
               </span>
             </div>
             <div class="db_item">
-              <img src="/images/tcHolidays/tc-PDP/camera-01.svg" alt="" v-if="getSightSeeingByDayAndPackage(item.day, item.packageClassId)?.sightseeingId" />
-              <span>{{getSightSeeingByDayAndPackage(item.day, item.packageClassId)?.sightseeingId?.name }} </span>
+              <img src="/images/tcHolidays/tc-PDP/camera-01.svg" alt="" v-if="getSightSeeingByDayAndPackage(item.day, selectedPackageClassId)?.sightseeingId" />
+              <span>{{getSightSeeingByDayAndPackage(item.day, selectedPackageClassId)?.sightseeingId?.name }} </span>
             </div>
             <div class="db_item">
               <img src="/images/tcHolidays/tc-PDP/meals-02.svg" alt="" />
-              <span>{{ getMealText(item.day, item.packageClassId) }}</span>
+              <span>{{ getMealText(item.day, selectedPackageClassId) }}</span>
             </div>
             <div class="db_item">
               <img src="/images/tcHolidays/tc-PDP/car.svg" alt="" />
